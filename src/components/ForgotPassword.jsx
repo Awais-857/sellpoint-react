@@ -22,7 +22,15 @@ function ForgotPassword() {
 
         try {
             const response = await api.post('/auth/forgot-password', { email });
+
+            // Store the message
             setMessage(response.data.message || 'Password reset link sent!');
+
+            // FIXED: Store the reset token if it's returned
+            if (response.data.resetToken) {
+                localStorage.setItem('lastResetToken', response.data.resetToken);
+            }
+
             setSubmitted(true);
         } catch (err) {
             if (err.response) {
@@ -67,6 +75,40 @@ function ForgotPassword() {
                     <div className="success-message">
                         <p>{message}</p>
                         <p>Check your email and click the link to reset your password.</p>
+
+                        {/* FIXED: Properly capture and store the reset token */}
+                        {(() => {
+                            // Get the resetToken from localStorage (set in handleSubmit)
+                            const resetToken = localStorage.getItem('lastResetToken');
+                            if (resetToken) {
+                                return (
+                                    <div style={{
+                                        marginTop: '15px',
+                                        padding: '10px',
+                                        background: '#e2e8f0',
+                                        borderRadius: '5px',
+                                        fontSize: '12px',
+                                        wordBreak: 'break-all'
+                                    }}>
+                                        <strong>Test Link (Demo Only):</strong><br />
+                                        <a
+                                            href={`${window.location.origin}/reset-password?token=${resetToken}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Click here to reset (prototype only)
+                                        </a>
+                                        <p style={{ marginTop: '5px', color: '#666', fontSize: '11px' }}>
+                                            Token: {resetToken.substring(0, 20)}... (valid for 24 hours)
+                                        </p>
+                                        <p style={{ marginTop: '5px', color: '#666' }}>
+                                            In production, this would be sent via email.
+                                        </p>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
                     </div>
                 )}
 

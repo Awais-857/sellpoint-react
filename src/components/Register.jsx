@@ -1,13 +1,12 @@
 // src/components/Register.jsx
-// This is the Registration Form page
+// This is the Registration Form page with UserType selection
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './Auth.css'; // We'll create this next
+import './Auth.css';
 
 function Register() {
-    // useState hook - manages form data
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -15,31 +14,24 @@ function Register() {
         username: '',
         password: '',
         confirmPassword: '',
-        phoneNumber: ''
+        phoneNumber: '',
+        userType: 'Customer'  // NEW: Default to Customer
     });
 
-    // useState for error messages
     const [error, setError] = useState('');
-
-    // useState for loading state (show spinner while submitting)
     const [loading, setLoading] = useState(false);
-
-    // useNavigate hook - for redirecting after successful registration
     const navigate = useNavigate();
 
-    // Handle input changes - updates formData state as user types
     const handleChange = (e) => {
         setFormData({
-            ...formData,           // Keep all existing data
-            [e.target.name]: e.target.value  // Update only the changed field
+            ...formData,
+            [e.target.name]: e.target.value
         });
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent page refresh
+        e.preventDefault();
 
-        // Basic validation
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords don't match!");
             return;
@@ -54,27 +46,24 @@ function Register() {
         setError('');
 
         try {
-            // Send data to your backend API
+            // Send data to backend - includes userType now
             const response = await api.post('/auth/register', {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 email: formData.email,
                 username: formData.username,
                 password: formData.password,
-                phoneNumber: formData.phoneNumber
+                phoneNumber: formData.phoneNumber,
+                userType: formData.userType  // NEW: Send selected user type
             });
 
-            // If successful
             alert('Registration successful! Please login.');
-            navigate('/login'); // Redirect to login page
+            navigate('/login');
 
         } catch (err) {
-            // Handle errors from backend
             if (err.response) {
-                // Backend responded with error
                 setError(err.response.data.message || 'Registration failed');
             } else {
-                // Network error or no response
                 setError('Network error. Please try again.');
             }
         } finally {
@@ -139,6 +128,34 @@ function Register() {
                             required
                             placeholder="johndoe"
                         />
+                    </div>
+
+                    {/* NEW: User Type Selection */}
+                    <div className="form-group">
+                        <label>Register as</label>
+                        <select
+                            name="userType"
+                            value={formData.userType}
+                            onChange={handleChange}
+                            required
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                border: '1px solid #ddd',
+                                borderRadius: '5px',
+                                fontSize: '16px'
+                            }}
+                        >
+                            <option value="Customer">Customer</option>
+                            <option value="Vendor">Vendor</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                            {formData.userType === 'Vendor' &&
+                                "Vendor accounts require admin approval before you can sell products."}
+                            {formData.userType === 'Admin' &&
+                                "Admin accounts have full system access. Use responsibly."}
+                        </small>
                     </div>
 
                     <div className="form-row">

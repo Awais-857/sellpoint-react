@@ -37,6 +37,7 @@ function Login() {
             localStorage.setItem('username', response.data.username);
             localStorage.setItem('userEmail', response.data.email);
             localStorage.setItem('userId', response.data.userId);
+            localStorage.setItem('userType', response.data.userType);
 
             // Redirect to dashboard
             navigate('/dashboard');
