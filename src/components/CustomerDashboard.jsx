@@ -1,4 +1,6 @@
 // src/components/CustomerDashboard.jsx
+// Clean version for prototype
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
@@ -35,37 +37,29 @@ function CustomerDashboard() {
                 <h2>Welcome, {username}!</h2>
 
                 <div className="dashboard-card">
-                    <h3>Your Account (from SRS UC-017 to UC-026)</h3>
+                    <h3>Your Account</h3>
                     <p>Email: {email}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>🛍️ Browse Products</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Shop from vendors (UC-020)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Shop from vendors</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>🛒 My Cart</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>View and checkout (UC-021/022)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>View and checkout</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>📦 Order History</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Track past orders (UC-025)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Track past orders</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>📍 Track Order</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Current order status (UC-024)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Current order status</p>
                         </div>
                     </div>
-                </div>
-
-                <div className="info-card">
-                    <h3>Prototype Information</h3>
-                    <p>This dashboard confirms that:</p>
-                    <ul>
-                        <li>✅ Registration works (with UserType)</li>
-                        <li>✅ Login works</li>
-                        <li>✅ Password reset works</li>
-                        <li>✅ Role-based redirect works</li>
-                    </ul>
+                    <p style={{ marginTop: '20px', color: '#718096', fontStyle: 'italic' }}>
+                        These features will be implemented in the final deliverable.
+                    </p>
                 </div>
             </div>
         </div>

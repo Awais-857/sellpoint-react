@@ -1,4 +1,6 @@
-// In VendorDashboard.jsx, add state to fetch profile
+// src/components/VendorDashboard.jsx
+// Clean version for prototype
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -45,6 +47,10 @@ function VendorDashboard() {
     if (loading) {
         return (
             <div className="dashboard-container">
+                <nav className="dashboard-nav">
+                    <h1>SellPoint Vendor</h1>
+                    <button onClick={handleLogout} className="logout-btn">Logout</button>
+                </nav>
                 <div className="dashboard-content">
                     <p>Loading profile...</p>
                 </div>
@@ -96,23 +102,23 @@ function VendorDashboard() {
                 <p>Welcome back, {username}!</p>
 
                 <div className="dashboard-card">
-                    <h3>Store Management (from SRS UC-009 to UC-016)</h3>
+                    <h3>Store Management</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>➕ Add Product</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>List new products (UC-011)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>List new products</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>📝 My Products</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Manage inventory (UC-012)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Manage inventory</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>📦 Orders</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Process customer orders (UC-013)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>Process customer orders</p>
                         </div>
                         <div style={{ padding: '15px', background: '#f7fafc', borderRadius: '5px' }}>
                             <strong>💰 Revenue</strong>
-                            <p style={{ fontSize: '14px', marginTop: '5px' }}>View earnings (UC-015)</p>
+                            <p style={{ fontSize: '14px', marginTop: '5px' }}>View earnings</p>
                         </div>
                     </div>
                     <p style={{ marginTop: '20px', color: '#718096', fontStyle: 'italic' }}>
