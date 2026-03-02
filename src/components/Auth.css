@@ -154,3 +154,75 @@ button:disabled {
     color: #666;
     font-size: 12px;
 }
+
+/* Additional styles for forms */
+.form-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: white;
+    cursor: pointer;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.info-box {
+    background: #f0f9ff;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+    border: 1px solid #bae6fd;
+}
+
+.info-box p {
+    margin: 0;
+    color: #0369a1;
+}
+
+/* Dashboard action buttons */
+.action-btn {
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Message banner */
+.message-banner {
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Table styles */
+@media (max-width: 768px) {
+    table {
+        font-size: 14px;
+    }
+    
+    td, th {
+        padding: 8px !important;
+    }
+}

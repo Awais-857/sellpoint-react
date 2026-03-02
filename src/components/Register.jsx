@@ -1,5 +1,5 @@
 // src/components/Register.jsx
-// This is the Registration Form page with UserType selection
+// Updated with file upload support for vendors
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,17 +8,39 @@ import './Auth.css';
 
 function Register() {
     const [formData, setFormData] = useState({
+        // Basic fields (all users)
         firstName: '',
         lastName: '',
         email: '',
         username: '',
         password: '',
         confirmPassword: '',
+        userType: 'Customer',
+
+        // Optional for all
         phoneNumber: '',
-        userType: 'Customer'  // NEW: Default to Customer
+        dateOfBirth: '',
+
+        // Vendor fields
+        businessName: '',
+        taxID: '',
+        businessPhone: '',
+        businessEmail: '',
+        website: '',
+        businessDescription: '',
+
+        // Admin fields
+        department: '',
+        jobTitle: ''
+    });
+
+    const [files, setFiles] = useState({
+        businessLicense: null,
+        taxCertificate: null
     });
 
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -29,36 +51,120 @@ function Register() {
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        const fieldName = e.target.name;
 
+        if (file) {
+            // Validate file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                setError(`${fieldName} file size must be less than 5MB`);
+                e.target.value = null; // Clear the input
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                setError(`${fieldName} must be PDF, JPEG, or PNG`);
+                e.target.value = null; // Clear the input
+                return;
+            }
+
+            // Clear any previous errors
+            setError('');
+
+            setFiles({
+                ...files,
+                [fieldName]: file
+            });
+        }
+    };
+
+    const handleUserTypeChange = (e) => {
+        const newType = e.target.value;
+        setFormData({
+            ...formData,
+            userType: newType,
+            // Reset fields based on selection
+            ...(newType === 'Customer' ? {
+                businessName: '', taxID: '', businessPhone: '', businessEmail: '', website: '', businessDescription: '',
+                department: '', jobTitle: ''
+            } : newType === 'Vendor' ? {
+                department: '', jobTitle: ''
+            } : { // Admin
+                businessName: '', taxID: '', businessPhone: '', businessEmail: '', website: '', businessDescription: ''
+            })
+        });
+
+        // Clear files if switching away from vendor
+        if (newType !== 'Vendor') {
+            setFiles({
+                businessLicense: null,
+                taxCertificate: null
+            });
+        }
+    };
+
+    const validateForm = () => {
+        // Password validation
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords don't match!");
-            return;
+            return false;
         }
 
         if (formData.password.length < 6) {
             setError("Password must be at least 6 characters");
+            return false;
+        }
+
+        // Vendor-specific validation
+        if (formData.userType === 'Vendor') {
+            if (!formData.businessName?.trim()) {
+                setError("Business Name is required for vendors");
+                return false;
+            }
+            if (!formData.taxID?.trim()) {
+                setError("Tax ID / VAT Number is required for vendors");
+                return false;
+            }
+
+            // Validate files are selected
+            if (!files.businessLicense) {
+                setError("Business License is required");
+                return false;
+            }
+            if (!files.taxCertificate) {
+                setError("Tax Certificate is required");
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
             return;
         }
 
         setLoading(true);
         setError('');
+        setSuccess('');
 
         try {
-            // Send data to backend - includes userType now
-            const response = await api.post('/auth/register', {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                username: formData.username,
-                password: formData.password,
-                phoneNumber: formData.phoneNumber,
-                userType: formData.userType  // NEW: Send selected user type
-            });
+            // Only register the user - skip file upload for prototype
+            const registerResponse = await api.post('/auth/register', formData);
 
-            alert('Registration successful! Please login.');
-            navigate('/login');
+            // Show success message regardless of vendor status
+            setSuccess(registerResponse.data.message || 'Registration successful!');
+
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
 
         } catch (err) {
             if (err.response) {
@@ -71,6 +177,21 @@ function Register() {
         }
     };
 
+    if (success) {
+        return (
+            <div className="auth-container">
+                <div className="auth-card">
+                    <h2>Registration Successful!</h2>
+                    <div className="success-message">{success}</div>
+                    <p>Redirecting you to login page...</p>
+                    <p className="auth-link">
+                        <Link to="/login">Click here if not redirected</Link>
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="auth-container">
             <div className="auth-card">
@@ -80,9 +201,10 @@ function Register() {
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit}>
+                    {/* Basic Fields */}
                     <div className="form-row">
                         <div className="form-group">
-                            <label>First Name</label>
+                            <label>First Name *</label>
                             <input
                                 type="text"
                                 name="firstName"
@@ -94,7 +216,7 @@ function Register() {
                         </div>
 
                         <div className="form-group">
-                            <label>Last Name</label>
+                            <label>Last Name *</label>
                             <input
                                 type="text"
                                 name="lastName"
@@ -107,7 +229,7 @@ function Register() {
                     </div>
 
                     <div className="form-group">
-                        <label>Email</label>
+                        <label>Email *</label>
                         <input
                             type="email"
                             name="email"
@@ -119,7 +241,7 @@ function Register() {
                     </div>
 
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>Username *</label>
                         <input
                             type="text"
                             name="username"
@@ -130,37 +252,211 @@ function Register() {
                         />
                     </div>
 
-                    {/* NEW: User Type Selection */}
+                    {/* User Type Selection */}
                     <div className="form-group">
-                        <label>Register as</label>
+                        <label>Register as *</label>
                         <select
                             name="userType"
                             value={formData.userType}
-                            onChange={handleChange}
+                            onChange={handleUserTypeChange}
                             required
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                border: '1px solid #ddd',
-                                borderRadius: '5px',
-                                fontSize: '16px'
-                            }}
+                            className="form-select"
                         >
                             <option value="Customer">Customer</option>
                             <option value="Vendor">Vendor</option>
                             <option value="Admin">Admin</option>
                         </select>
-                        <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                            {formData.userType === 'Vendor' &&
-                                "Vendor accounts require admin approval before you can sell products."}
-                            {formData.userType === 'Admin' &&
-                                "Admin accounts have full system access. Use responsibly."}
-                        </small>
                     </div>
 
+                    {/* Optional fields for all */}
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Password</label>
+                            <label>Phone Number (Optional)</label>
+                            <input
+                                type="tel"
+                                name="phoneNumber"
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                placeholder="123-456-7890"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Date of Birth (Optional)</label>
+                            <input
+                                type="date"
+                                name="dateOfBirth"
+                                value={formData.dateOfBirth}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Vendor Specific Fields */}
+                    {formData.userType === 'Vendor' && (
+                        <div className="vendor-fields">
+                            <h3 style={{ margin: '20px 0 10px', color: '#4a5568' }}>Business Information</h3>
+
+                            <div className="form-group">
+                                <label>Business Name *</label>
+                                <input
+                                    type="text"
+                                    name="businessName"
+                                    value={formData.businessName}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Your Business Name"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tax ID / VAT Number *</label>
+                                <input
+                                    type="text"
+                                    name="taxID"
+                                    value={formData.taxID}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="XX-XXXXXXX"
+                                />
+                                <small>Format: XX-XXXXXXX</small>
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Business Phone</label>
+                                    <input
+                                        type="tel"
+                                        name="businessPhone"
+                                        value={formData.businessPhone}
+                                        onChange={handleChange}
+                                        placeholder="Business phone"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Business Email</label>
+                                    <input
+                                        type="email"
+                                        name="businessEmail"
+                                        value={formData.businessEmail}
+                                        onChange={handleChange}
+                                        placeholder="business@email.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Website (Optional)</label>
+                                <input
+                                    type="url"
+                                    name="website"
+                                    value={formData.website}
+                                    onChange={handleChange}
+                                    placeholder="https://yourbusiness.com"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Business Description</label>
+                                <textarea
+                                    name="businessDescription"
+                                    value={formData.businessDescription}
+                                    onChange={handleChange}
+                                    placeholder="Describe your business..."
+                                    rows="3"
+                                />
+                            </div>
+
+                            {/* File Upload Section */}
+                            <h3 style={{ margin: '20px 0 10px', color: '#4a5568' }}>Required Documents</h3>
+
+                            <div className="form-group">
+                                <label>Business License *</label>
+                                <input
+                                    type="file"
+                                    name="businessLicense"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    required={formData.userType === 'Vendor'}
+                                    style={{ padding: '5px' }}
+                                />
+                                <small>PDF, JPEG or PNG (Max 5MB)</small>
+                                {files.businessLicense && (
+                                    <small style={{ color: '#48bb78', display: 'block', marginTop: '5px' }}>
+                                        ✓ Selected: {files.businessLicense.name}
+                                    </small>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tax Certificate *</label>
+                                <input
+                                    type="file"
+                                    name="taxCertificate"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    required={formData.userType === 'Vendor'}
+                                    style={{ padding: '5px' }}
+                                />
+                                <small>PDF, JPEG or PNG (Max 5MB)</small>
+                                {files.taxCertificate && (
+                                    <small style={{ color: '#48bb78', display: 'block', marginTop: '5px' }}>
+                                        ✓ Selected: {files.taxCertificate.name}
+                                    </small>
+                                )}
+                            </div>
+
+                            <div className="info-box">
+                                <p>
+                                    <strong>Note:</strong> Vendors are auto-approved for the prototype.
+                                    Your documents will be stored securely.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Admin Specific Fields */}
+                    {formData.userType === 'Admin' && (
+                        <div className="admin-fields">
+                            <h3 style={{ margin: '20px 0 10px', color: '#4a5568' }}>Administrator Information</h3>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Department</label>
+                                    <input
+                                        type="text"
+                                        name="department"
+                                        value={formData.department}
+                                        onChange={handleChange}
+                                        placeholder="e.g., IT, Sales, Management"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Job Title</label>
+                                    <input
+                                        type="text"
+                                        name="jobTitle"
+                                        value={formData.jobTitle}
+                                        onChange={handleChange}
+                                        placeholder="e.g., System Admin, Manager"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="info-box" style={{ background: '#fff3cd', borderColor: '#ffc107' }}>
+                                <p style={{ color: '#856404' }}>
+                                    <strong>Note:</strong> Admin accounts have full system access. Use responsibly.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Password Fields */}
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Password *</label>
                             <input
                                 type="password"
                                 name="password"
@@ -168,11 +464,12 @@ function Register() {
                                 onChange={handleChange}
                                 required
                                 placeholder="••••••••"
+                                minLength="6"
                             />
                         </div>
 
                         <div className="form-group">
-                            <label>Confirm Password</label>
+                            <label>Confirm Password *</label>
                             <input
                                 type="password"
                                 name="confirmPassword"
@@ -180,23 +477,15 @@ function Register() {
                                 onChange={handleChange}
                                 required
                                 placeholder="••••••••"
+                                minLength="6"
                             />
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label>Phone Number (Optional)</label>
-                        <input
-                            type="tel"
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                            placeholder="123-456-7890"
-                        />
-                    </div>
-
                     <button type="submit" disabled={loading}>
-                        {loading ? 'Creating Account...' : 'Register'}
+                        {loading ? 'Creating Account...' :
+                            formData.userType === 'Vendor' ? 'Submit Vendor Application' :
+                                formData.userType === 'Admin' ? 'Create Admin Account' : 'Register'}
                     </button>
                 </form>
 
