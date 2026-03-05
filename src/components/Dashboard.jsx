@@ -17,7 +17,7 @@ function Dashboard() {
         }
 
         // Redirect based on user type
-        switch(userType) {
+        switch (userType) {
             case 'Admin':
                 navigate('/admin-dashboard');
                 break;
@@ -36,11 +36,11 @@ function Dashboard() {
 
     // Show loading while redirecting
     return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100vh' 
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh'
         }}>
             <p>Redirecting to your dashboard...</p>
         </div>
